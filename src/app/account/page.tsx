@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { UserCircle, Lock, ShareAndroid } from "iconoir-react";
+import { Lock, ShareAndroid, UserCircle } from "iconoir-react";
+import { AccountHomeHero } from "@/components/AccountHomeHero";
 
 export default async function AccountHomePage() {
   const supabase = await createClient();
@@ -30,39 +31,11 @@ export default async function AccountHomePage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="flex flex-col items-center text-center">
-        <div
-          className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2"
-          style={{
-            borderColor: "var(--dashboard-border)",
-            backgroundColor: "var(--dashboard-card)",
-          }}
-        >
-          {profile?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={String(profile.avatar_url)}
-              alt=""
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <UserCircle
-              width={48}
-              height={48}
-              style={{ color: "var(--dashboard-text-muted)" }}
-            />
-          )}
-        </div>
-        <h1
-          className="font-heading-ja mt-4 text-2xl font-semibold"
-          style={{ color: "var(--dashboard-text)" }}
-        >
-          {displayName}
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--dashboard-text-muted)" }}>
-          {user.email}
-        </p>
-      </div>
+      <AccountHomeHero
+        displayName={displayName}
+        avatarUrl={profile?.avatar_url ? String(profile.avatar_url) : null}
+        email={user.email ?? ""}
+      />
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         {quickLinks.map(({ href, label, icon: Icon }) => (

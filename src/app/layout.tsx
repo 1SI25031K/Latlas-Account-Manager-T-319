@@ -19,13 +19,21 @@ export const metadata: Metadata = {
 
 const themeInitScript = `
 (function(){
+  function systemTheme() {
+    try {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch (e2) {
+      return 'light';
+    }
+  }
   try {
     var t = localStorage.getItem('dashboard-theme');
     document.documentElement.classList.add('dashboard-theme-root');
-    document.documentElement.setAttribute('data-theme', (t === 'dark' || t === 'light') ? t : 'light');
+    var resolved = (t === 'dark' || t === 'light') ? t : systemTheme();
+    document.documentElement.setAttribute('data-theme', resolved);
   } catch (e) {
     document.documentElement.classList.add('dashboard-theme-root');
-    document.documentElement.setAttribute('data-theme', 'light');
+    document.documentElement.setAttribute('data-theme', systemTheme());
   }
 })();`;
 

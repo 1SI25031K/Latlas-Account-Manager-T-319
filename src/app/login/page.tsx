@@ -26,7 +26,7 @@ export default async function LoginPage() {
           className="font-heading-ja text-center text-xl font-semibold"
           style={{ color: "var(--dashboard-text)" }}
         >
-          Latlas アカウント管理
+          Latlas Account
         </h1>
         <p className="mt-1 text-center text-sm" style={{ color: "var(--dashboard-text-muted)" }}>
           メールアドレスとパスワードでログイン

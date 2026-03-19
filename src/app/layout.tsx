@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Latlas アカウント管理",
+  title: "Latlas Account",
   description: "ログイン情報とプロフィールの編集",
 };
 

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
-import { NavArrowLeft, UserCircle } from "iconoir-react";
+import { NavArrowLeft } from "iconoir-react";
 import { SignOutButton } from "@/components/SignOutButton";
+import { SidebarNav } from "@/components/SidebarNav";
 import { ThemeToggleSlot } from "@/components/ThemeToggleSlot";
 
 const LATLAS_URL = process.env.NEXT_PUBLIC_LATLAS_DASHBOARD_URL;
@@ -24,18 +25,10 @@ export function DashboardShell({
       >
         <div className="flex h-14 items-center border-b px-4" style={{ borderColor: "var(--dashboard-border)" }}>
           <span className="font-heading-ja text-sm font-semibold" style={{ color: "var(--dashboard-text)" }}>
-            アカウント管理
+            Latlas Account
           </span>
         </div>
-        <nav className="flex flex-1 flex-col gap-0.5 p-2">
-          <div
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
-            style={{ backgroundColor: "var(--dashboard-nav-active-bg)", color: "var(--dashboard-text)" }}
-          >
-            <UserCircle width={20} height={20} strokeWidth={1.5} />
-            プロフィール
-          </div>
-        </nav>
+        <SidebarNav />
         <div className="border-t p-2" style={{ borderColor: "var(--dashboard-border)" }}>
           {LATLAS_URL ? (
             <Link

@@ -1,26 +1,48 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Latlas Teacher Dashboard と同一トークン */
+html.dashboard-theme-root[data-theme="light"] {
+  --dashboard-bg: #f5f5f7;
+  --dashboard-sidebar: #f7f7f8;
+  --dashboard-card: #ffffff;
+  --dashboard-text: #171717;
+  --dashboard-text-muted: #6b7280;
+  --dashboard-border: #e5e7eb;
+  --dashboard-nav-active-bg: #f3f4f6;
+}
+
+html.dashboard-theme-root[data-theme="dark"] {
+  --dashboard-bg: #000000;
+  --dashboard-sidebar: #0a0a0a;
+  --dashboard-card: #0a0a0a;
+  --dashboard-text: #c9d1d9;
+  --dashboard-text-muted: #8b949e;
+  --dashboard-border: #21262d;
+  --dashboard-nav-active-bg: rgba(255, 255, 255, 0.05);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html.dashboard-theme-root {
+  background-color: var(--dashboard-bg);
+  color: var(--dashboard-text);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+html.dashboard-theme-root body {
+  background-color: var(--dashboard-bg);
+  color: var(--dashboard-text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* 日本語見出し（Latlas 系の一体感） */
+.font-heading-ja {
+  font-family:
+    "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN",
+    "Hiragino Kaku Gothic Pro",
+    Meiryo,
+    sans-serif;
 }

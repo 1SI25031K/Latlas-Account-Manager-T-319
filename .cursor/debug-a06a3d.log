@@ -1,0 +1,11 @@
+{"sessionId":"a06a3d","location":"layout.tsx:RootLayout","message":"RootLayout render uses inline script in head","data":{"inlineScript":true},"timestamp":1773882088331,"hypothesisId":"A","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"server.ts:createClient","message":"createClient env check","data":{"hasUrl":false,"hasKey":false},"timestamp":1773882088354,"hypothesisId":"C","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"layout.tsx:RootLayout","message":"RootLayout render uses inline script in head","data":{"inlineScript":true},"timestamp":1773882097959,"hypothesisId":"A","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"server.ts:createClient","message":"createClient env check","data":{"hasUrl":false,"hasKey":false},"timestamp":1773882098045,"hypothesisId":"C","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"layout.tsx:RootLayout","message":"RootLayout render uses inline script in head","data":{"inlineScript":true},"timestamp":1773882098099,"hypothesisId":"A","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"server.ts:createClient","message":"createClient env check","data":{"hasUrl":false,"hasKey":false},"timestamp":1773882098114,"hypothesisId":"C","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"layout.tsx:RootLayout","message":"RootLayout render uses inline script in head","data":{"inlineScript":true},"timestamp":1773882102367,"hypothesisId":"A","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"server.ts:createClient","message":"createClient env check","data":{"hasUrl":false,"hasKey":false},"timestamp":1773882102386,"hypothesisId":"C","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"layout.tsx:RootLayout","message":"RootLayout render uses inline script in head","data":{"inlineScript":true},"timestamp":1773882102431,"hypothesisId":"A","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"server.ts:createClient","message":"createClient env check","data":{"hasUrl":false,"hasKey":false},"timestamp":1773882102445,"hypothesisId":"C","runId":"pre-fix"}
+{"sessionId":"a06a3d","location":"layout.tsx:RootLayout","message":"RootLayout render uses inline script in head","data":{"inlineScript":true},"timestamp":1773882189784,"hypothesisId":"A","runId":"pre-fix"}

@@ -9,6 +9,9 @@ html.dashboard-theme-root[data-theme="light"] {
   --dashboard-text-muted: #6b7280;
   --dashboard-border: #e5e7eb;
   --dashboard-nav-active-bg: #f3f4f6;
+  /* AI チャット: 自分の投稿（薄青背景・白文字、コントラスト確保済み） */
+  --account-chat-user-bg: #5b9ce6;
+  --account-chat-user-text: #ffffff;
 }
 
 html.dashboard-theme-root[data-theme="dark"] {
@@ -19,6 +22,8 @@ html.dashboard-theme-root[data-theme="dark"] {
   --dashboard-text-muted: #8b949e;
   --dashboard-border: #21262d;
   --dashboard-nav-active-bg: rgba(255, 255, 255, 0.05);
+  --account-chat-user-bg: #4a7eb5;
+  --account-chat-user-text: #ffffff;
 }
 
 @theme inline {
@@ -47,7 +52,7 @@ html.dashboard-theme-root body {
     sans-serif;
 }
 
-/* 全幅トップバー遷移インジケーター（レイアウトに影響しない absolute） */
+/* 遷移インジケーター: ビューポート最上部に固定（ヘッダー下線廃止後の視認性用） */
 @keyframes dashboard-nav-progress {
   0% {
     transform: translateX(-100%);
@@ -58,10 +63,11 @@ html.dashboard-theme-root body {
 }
 
 .dashboard-nav-progress-track {
-  position: absolute;
+  position: fixed;
+  top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
+  z-index: 300;
   overflow: hidden;
   pointer-events: none;
 }

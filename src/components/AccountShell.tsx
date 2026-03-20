@@ -89,7 +89,17 @@ export function AccountShell({
 
   return (
     <div className="flex min-h-full flex-col">
-      {/* 全幅トップバー。インジケーターは高さを変えず bottom に absolute */}
+      {/* 画面最上部 fixed（globals.css）。ヘッダーとは独立 */}
+      <div
+        className={`dashboard-nav-progress-track ${pending ? "dashboard-nav-progress-track--active" : "dashboard-nav-progress-track--idle"}`}
+        role={pending ? "progressbar" : undefined}
+        aria-busy={pending ? true : undefined}
+        aria-label={pending ? "ページを読み込み中" : undefined}
+        aria-valuetext={pending ? "読み込み中" : undefined}
+      >
+        {pending ? <div className="dashboard-nav-progress-segment" aria-hidden /> : null}
+      </div>
+
       <div className="relative z-10 flex w-full shrink-0">
         <div
           className="flex h-14 w-56 shrink-0 items-center px-4 md:w-64"
@@ -112,15 +122,6 @@ export function AccountShell({
             <HeaderAccountAvatar avatarUrl={avatarUrl} />
           </div>
         </header>
-        <div
-          className={`dashboard-nav-progress-track pointer-events-none ${pending ? "dashboard-nav-progress-track--active" : "dashboard-nav-progress-track--idle"}`}
-          role={pending ? "progressbar" : undefined}
-          aria-busy={pending ? true : undefined}
-          aria-label={pending ? "ページを読み込み中" : undefined}
-          aria-valuetext={pending ? "読み込み中" : undefined}
-        >
-          {pending ? <div className="dashboard-nav-progress-segment" aria-hidden /> : null}
-        </div>
       </div>
 
       <div className="flex min-h-0 flex-1">

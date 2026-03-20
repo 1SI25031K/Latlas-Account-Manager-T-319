@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleSpark, FastArrowRight, UserCircle } from "iconoir-react";
+import { CircleSpark, Send, UserCircle } from "iconoir-react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import type { ChatMessagePayload } from "@/lib/account-ai-types";
 import {
@@ -122,9 +122,8 @@ export function AccountHomeAI({
   );
 
   const onComposerKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key !== "Enter") return;
-      if (e.shiftKey) return;
       e.preventDefault();
       void submitUserText(input);
     },
@@ -214,8 +213,8 @@ export function AccountHomeAI({
                   className="max-w-[92%] rounded-3xl px-3 py-2 text-sm leading-relaxed"
                   style={{
                     backgroundColor:
-                      m.role === "user" ? "var(--dashboard-nav-active-bg)" : "var(--dashboard-bg)",
-                    color: "var(--dashboard-text)",
+                      m.role === "user" ? "var(--account-chat-user-bg)" : "var(--dashboard-bg)",
+                    color: m.role === "user" ? "var(--account-chat-user-text)" : "var(--dashboard-text)",
                   }}
                 >
                   {m.text}
@@ -260,23 +259,23 @@ export function AccountHomeAI({
           </p>
         ) : null}
 
-        <form onSubmit={onSubmit} className="w-full shrink-0 pt-4">
+        <form onSubmit={onSubmit} className="w-full shrink-0 py-6 pt-8">
           <div
-            className="flex w-full items-end gap-2 rounded-[9999px] border py-2 pl-4 pr-2"
+            className="flex w-full items-center gap-3 rounded-[9999px] border px-2 py-4 pl-5 sm:pl-6"
             style={{
               borderColor: "var(--dashboard-border)",
               backgroundColor: "var(--dashboard-bg)",
             }}
           >
-            <textarea
+            <input
               id="account-ai-input"
-              rows={3}
+              type="text"
               autoComplete="off"
               disabled={loading}
               placeholder="Latlas Account について質問できます。"
-              title="Enter で送信、Shift+Enter で改行"
+              title="Enter で送信"
               aria-label="質問を入力"
-              className="min-h-[4.5rem] min-w-0 flex-1 resize-none border-0 bg-transparent py-2 text-sm leading-relaxed outline-none"
+              className="min-h-10 min-w-0 flex-1 border-0 bg-transparent py-2 text-sm leading-normal outline-none"
               style={{ color: "var(--dashboard-text)" }}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -285,15 +284,21 @@ export function AccountHomeAI({
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-opacity hover:opacity-90 disabled:opacity-40"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-[opacity,transform] duration-150 hover:opacity-90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45"
               style={{
-                borderColor: "var(--dashboard-border)",
-                backgroundColor: "transparent",
-                color: "var(--dashboard-text)",
+                backgroundColor: "#0a0a0a",
+                color: "#fafafa",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.12)",
               }}
               aria-label="送信"
             >
-              <FastArrowRight width={20} height={20} strokeWidth={1.5} />
+              <Send
+                width={22}
+                height={22}
+                strokeWidth={1.85}
+                className="-translate-x-px translate-y-px"
+                aria-hidden
+              />
             </button>
           </div>
         </form>

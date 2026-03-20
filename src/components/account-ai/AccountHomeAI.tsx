@@ -10,6 +10,7 @@ import {
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ChatMessagePayload } from "@/lib/account-ai-types";
+import { ACCOUNT_AI_SUGGESTION_ITEMS } from "@/lib/account-ai-suggestions";
 import {
   ACCOUNT_FAQ_DISPLAY_MAX,
   ACCOUNT_FAQ_ITEMS,
@@ -73,6 +74,13 @@ export function AccountHomeAI({
   const enterArmedRef = useRef(false);
   /** ブラウザの setTimeout は number、Node の型定義と食い違うため明示 */
   const enterArmTimeoutRef = useRef<number | null>(null);
+  /** submitUserText 内で直近の loading を参照（コールバックの古い closure 対策） */
+  const loadingRef = useRef(loading);
+  loadingRef.current = loading;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+  /** 送信処理の重複開始防止（再描画前に連打された場合） */
+  const sendingGuardRef = useRef(false);
 
   const [faqChips] = useState(() =>
     ACCOUNT_FAQ_ITEMS.length
@@ -127,14 +135,19 @@ export function AccountHomeAI({
   const submitUserText = useCallback(
     async (raw: string) => {
       const t = raw.trim();
-      if (!t || loading) return;
+      if (!t || loadingRef.current || sendingGuardRef.current) return;
+      sendingGuardRef.current = true;
       const userMsg: ChatMessagePayload = { role: "user", text: t };
-      const next = [...messages, userMsg];
-      setMessages(next);
-      setInput("");
-      await sendMessages(next);
+      const nextForSend = [...messagesRef.current, userMsg];
+      try {
+        setMessages(nextForSend);
+        setInput("");
+        await sendMessages(nextForSend);
+      } finally {
+        sendingGuardRef.current = false;
+      }
     },
-    [loading, messages, sendMessages],
+    [sendMessages, setMessages, setInput],
   );
 
   const clearEnterArmTimer = useCallback(() => {
@@ -148,6 +161,15 @@ export function AccountHomeAI({
     enterArmedRef.current = false;
     clearEnterArmTimer();
   }, [clearEnterArmTimer]);
+
+  /** マーキーからそのままユーザーメッセージとして送信 */
+  const onMarqueeSuggestionClick = useCallback(
+    (label: string) => {
+      resetEnterArm();
+      void submitUserText(label);
+    },
+    [resetEnterArm, submitUserText],
+  );
 
   useLayoutEffect(() => {
     return () => clearEnterArmTimer();
@@ -329,6 +351,27 @@ export function AccountHomeAI({
 
   const hasConversation = messages.length > 0;
 
+  /** アニメーション中の transform でも確実に反応するよう pointerup / キーボードで送る */
+  const onMarqueeChipPointerUp = useCallback(
+    (e: React.PointerEvent<HTMLButtonElement>, label: string) => {
+      e.stopPropagation();
+      if (loadingRef.current || hasConversation) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      onMarqueeSuggestionClick(label);
+    },
+    [hasConversation, onMarqueeSuggestionClick],
+  );
+
+  const onMarqueeChipKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>, label: string) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      if (loadingRef.current || hasConversation) return;
+      onMarqueeSuggestionClick(label);
+    },
+    [hasConversation, onMarqueeSuggestionClick],
+  );
+
   useLayoutEffect(() => {
     if (hasConversation) scrollToBottom();
   }, [hasConversation, messages, loading, scrollToBottom]);
@@ -338,7 +381,7 @@ export function AccountHomeAI({
       className={
         chatFullscreen
           ? "account-ai-chat-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border p-5 pb-2 shadow-sm sm:p-8 sm:pb-3 md:rounded-[2.25rem] md:mx-auto md:my-4 md:max-w-4xl md:flex-1"
-          : "account-ai-chat-card flex min-h-[min(70vh,520px)] max-h-[min(72vh,560px)] w-full flex-col rounded-3xl border p-5 pb-2 shadow-sm sm:p-8 sm:pb-3 md:rounded-[2.25rem]"
+          : "account-ai-chat-card flex min-h-[min(70vh,520px)] max-h-[min(72vh,560px)] w-full flex-col overflow-hidden rounded-3xl border p-5 pb-2 shadow-sm sm:p-8 sm:pb-3 md:rounded-[2.25rem]"
       }
       style={{
         borderColor: "var(--account-ui-border)",
@@ -420,21 +463,78 @@ export function AccountHomeAI({
         </div>
 
         <div
-          className={`pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-2 text-center transition-opacity duration-500 ${hasConversation ? "opacity-0" : "opacity-100"}`}
+          className={`pointer-events-none absolute inset-0 z-10 flex min-h-0 flex-col overflow-hidden px-2 text-center transition-opacity duration-500 ${hasConversation ? "opacity-0" : "opacity-100"}`}
           aria-hidden={hasConversation}
         >
           <div
-            className="account-ai-empty-title flex max-w-full items-center gap-2 text-lg font-semibold sm:text-xl"
-            style={{ color: "var(--dashboard-text)" }}
+            className={`flex min-h-0 w-full max-w-3xl flex-col items-center justify-start gap-4 overflow-y-auto pt-5 sm:gap-5 sm:pt-6 ${hasConversation ? "pointer-events-none" : "pointer-events-auto"}`}
           >
-            <span className="min-w-0">Latlas AI for Account Management</span>
-            <CircleSpark
-              width={28}
-              height={28}
-              strokeWidth={1.5}
-              className="shrink-0"
+            <div
+              className="account-ai-empty-title flex max-w-full shrink-0 items-center justify-center gap-2 text-lg font-semibold sm:text-xl"
               style={{ color: "var(--dashboard-text)" }}
-            />
+            >
+              <span className="min-w-0">Latlas AI for Account Management</span>
+              <CircleSpark
+                width={28}
+                height={28}
+                strokeWidth={1.5}
+                className="shrink-0"
+                style={{ color: "var(--dashboard-text)" }}
+              />
+            </div>
+            {ACCOUNT_AI_SUGGESTION_ITEMS.length > 0 ? (
+              <div
+                className={`account-ai-suggestions-marquee-clip w-full ${hasConversation ? "pointer-events-none" : ""}`}
+                role="region"
+                aria-label="質問の候補。クリックで送信できます。"
+              >
+                <div className="account-ai-suggestions-marquee-track">
+                  <div className="account-ai-suggestions-marquee-set">
+                    {ACCOUNT_AI_SUGGESTION_ITEMS.map((label, i) => (
+                      <button
+                        key={`account-ai-sugg-a-${i}`}
+                        type="button"
+                        disabled={loading}
+                        tabIndex={hasConversation ? -1 : undefined}
+                        className={`account-ai-suggestion-chip shrink-0 cursor-pointer whitespace-nowrap rounded-full border px-3 py-2 text-xs transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm ${hasConversation ? "pointer-events-none" : ""}`}
+                        style={{
+                          borderColor: "var(--account-ui-border)",
+                          backgroundColor: "var(--dashboard-card)",
+                          color: "var(--dashboard-text)",
+                        }}
+                        title={label}
+                        aria-label={`この質問を送る: ${label}`}
+                        onPointerUp={(e) => onMarqueeChipPointerUp(e, label)}
+                        onKeyDown={(e) => onMarqueeChipKeyDown(e, label)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="account-ai-suggestions-marquee-set" aria-hidden="true">
+                    {ACCOUNT_AI_SUGGESTION_ITEMS.map((label, i) => (
+                      <button
+                        key={`account-ai-sugg-b-${i}`}
+                        type="button"
+                        disabled={loading}
+                        tabIndex={-1}
+                        className={`account-ai-suggestion-chip shrink-0 cursor-pointer whitespace-nowrap rounded-full border px-3 py-2 text-xs transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm ${hasConversation ? "pointer-events-none" : ""}`}
+                        style={{
+                          borderColor: "var(--account-ui-border)",
+                          backgroundColor: "var(--dashboard-card)",
+                          color: "var(--dashboard-text)",
+                        }}
+                        title={label}
+                        onPointerUp={(e) => onMarqueeChipPointerUp(e, label)}
+                        onKeyDown={(e) => onMarqueeChipKeyDown(e, label)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

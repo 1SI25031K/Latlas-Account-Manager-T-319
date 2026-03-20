@@ -196,7 +196,106 @@ html.dashboard-theme-root body {
   animation: account-ai-title-reveal 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.52s both;
 }
 
+/* 空チャット: 質問候補は縦方向に1行だけ・自動で横方向に流す（無限ループ） */
+.account-ai-suggestions-marquee-clip {
+  width: 100%;
+  max-width: 56rem;
+  /* チップ1行分の高さに固定（複数段に折り返さない） */
+  height: 4rem;
+  max-height: 4rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.account-ai-suggestions-marquee-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: max-content;
+  gap: 0.625rem;
+  pointer-events: auto;
+  align-items: center;
+  will-change: transform;
+}
+
+/* タイトル露出アニメ（0.52s delay + 0.65s）が終わってからマーキー開始 */
+.account-ai-home:not([data-animated="true"]) .account-ai-suggestions-marquee-track {
+  animation: none;
+  transform: translateX(0);
+}
+
+.account-ai-home[data-animated="true"] .account-ai-suggestions-marquee-track {
+  animation: account-ai-suggestions-marquee 220s linear infinite;
+  animation-delay: 1.2s;
+}
+
+.account-ai-suggestions-marquee-set {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.625rem;
+  padding-block: 0;
+  pointer-events: auto;
+}
+
+/* タップの二重ズーム防止・マーキー移動中もクリックしやすく */
+.account-ai-suggestion-chip {
+  touch-action: manipulation;
+  white-space: nowrap;
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.account-ai-suggestion-chip:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+@keyframes account-ai-suggestions-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .account-ai-suggestions-marquee-clip {
+    overflow: hidden;
+  }
+
+  .account-ai-home:not([data-animated="true"]) .account-ai-suggestions-marquee-track {
+    animation: none;
+    transform: translateX(0);
+  }
+
+  /* タイトルは即表示のためマーキーも遅延なし・より長い周期 */
+  .account-ai-home[data-animated="true"] .account-ai-suggestions-marquee-track {
+    animation: account-ai-suggestions-marquee 320s linear infinite;
+    animation-delay: 0s;
+    flex-wrap: nowrap;
+    width: max-content;
+    max-width: none;
+    overflow: visible;
+    padding-inline: 0.25rem;
+  }
+
+  .account-ai-suggestion-chip {
+    transition: none;
+  }
+
+  .account-ai-suggestion-chip:hover:not(:disabled) {
+    transform: none;
+    box-shadow: none;
+  }
+
   .account-ai-home .account-home-item-1,
   .account-ai-home .account-home-item-2,
   .account-ai-home .account-home-item-3 {

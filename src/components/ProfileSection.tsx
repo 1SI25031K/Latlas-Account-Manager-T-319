@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { MediaImage } from "iconoir-react";
 import { createClient } from "@/lib/supabase/client";
 import { buildProfileInsertPayload, buildProfileUpsertPayload } from "@/lib/profile-keys";
+import { AccountPageReveal } from "@/components/AccountPageReveal";
 import { SectionTitle } from "@/components/SectionTitle";
 
 const cardClass = "rounded-2xl border p-6 shadow-sm";
@@ -139,7 +140,7 @@ export function ProfileSection({
   );
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <AccountPageReveal className="mx-auto max-w-3xl space-y-8">
       <div>
         <h1 className="font-heading-ja text-2xl font-semibold" style={{ color: "var(--dashboard-text)" }}>
           個人情報
@@ -279,6 +280,6 @@ export function ProfileSection({
           </button>
         </form>
       </section>
-    </div>
+    </AccountPageReveal>
   );
 }

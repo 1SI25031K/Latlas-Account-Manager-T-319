@@ -3,6 +3,7 @@
 import type { User } from "@supabase/supabase-js";
 import { useCallback, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { AccountPageReveal } from "@/components/AccountPageReveal";
 import { SectionTitle } from "@/components/SectionTitle";
 
 const cardClass = "rounded-2xl border p-6 shadow-sm";
@@ -85,7 +86,7 @@ export function SecuritySection({ user }: { user: User }) {
   );
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <AccountPageReveal className="mx-auto max-w-3xl space-y-8">
       <div>
         <h1 className="font-heading-ja text-2xl font-semibold" style={{ color: "var(--dashboard-text)" }}>
           セキュリティとログイン
@@ -173,6 +174,6 @@ export function SecuritySection({ user }: { user: User }) {
           </button>
         </form>
       </section>
-    </div>
+    </AccountPageReveal>
   );
 }

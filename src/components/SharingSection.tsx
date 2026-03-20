@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { useCallback, useMemo, useState } from "react";
 import { Plus, Trash } from "iconoir-react";
 import { createClient } from "@/lib/supabase/client";
+import { AccountPageReveal } from "@/components/AccountPageReveal";
 import { SectionTitle } from "@/components/SectionTitle";
 
 type AffiliationRow = {
@@ -178,7 +179,8 @@ export function SharingSection({
     setAffRows((rows) => (rows.length <= 1 ? rows : rows.filter((_, i) => i !== index)));
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <AccountPageReveal>
+      <div className="mx-auto max-w-3xl space-y-8">
       <div>
         <h1 className="font-heading-ja text-2xl font-semibold" style={{ color: "var(--dashboard-text)" }}>
           情報共有と連絡先
@@ -327,6 +329,7 @@ export function SharingSection({
           </p>
         </section>
       )}
-    </div>
+      </div>
+    </AccountPageReveal>
   );
 }

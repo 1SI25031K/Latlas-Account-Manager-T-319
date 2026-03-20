@@ -12,5 +12,18 @@ export default async function AccountLayout({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  return <DashboardShell user={user}>{children}</DashboardShell>;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("avatar_url")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const avatarUrl = profile?.avatar_url ? String(profile.avatar_url) : null;
+
+  return (
+    <DashboardShell user={user} avatarUrl={avatarUrl}>
+      {children}
+    </DashboardShell>
+  );
 }

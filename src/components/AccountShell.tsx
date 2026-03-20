@@ -14,8 +14,9 @@ import {
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { AppLauncher } from "@/components/app-launcher/AppLauncher";
+import { HeaderAccountAvatar } from "@/components/HeaderAccountAvatar";
 import { SignOutButton } from "@/components/SignOutButton";
-import { ThemeToggleSlot } from "@/components/ThemeToggleSlot";
 
 const NAV_ITEMS: {
   href: string;
@@ -68,49 +69,32 @@ function isNavItemActive(href: string, pathname: string): boolean {
 export function AccountShell({
   user,
   latlasUrl,
+  avatarUrl,
   children,
 }: {
   user: User;
   latlasUrl: string | undefined;
+  /** profiles.avatar_url 等（Dashboard と同じ取得元） */
+  avatarUrl: string | null;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [pending, setPending] = useState(false);
 
+  // pathname 確定後に pending を落とす（レンダー内同期だと同一コミットで消えインジケーターが出ない）
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- ナビ完了に合わせた外部同期
     setPending(false);
   }, [pathname]);
 
-  // #region agent log
-  useEffect(() => {
-    fetch("http://127.0.0.1:7891/ingest/c7be69ac-68de-41af-8832-64fc1180a20c", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "a06a3d" },
-      body: JSON.stringify({
-        sessionId: "a06a3d",
-        location: "AccountShell.tsx:useEffect",
-        message: "commit snapshot",
-        data: { pathname, pending },
-        timestamp: Date.now(),
-        hypothesisId: "I1",
-        runId: "post-fix",
-      }),
-    }).catch(() => {});
-  }, [pathname, pending]);
-  // #endregion
-
   return (
     <div className="flex min-h-full flex-col">
-      {/* 全幅トップバー: タイトル + テーマ。インジケーターは高さを変えず bottom に absolute */}
-      <div
-        className="relative z-10 flex w-full shrink-0"
-        style={{ borderColor: "var(--dashboard-border)" }}
-      >
+      {/* 全幅トップバー。インジケーターは高さを変えず bottom に absolute */}
+      <div className="relative z-10 flex w-full shrink-0">
         <div
-          className="flex h-14 w-56 shrink-0 items-center border-b border-r px-4 md:w-64"
+          className="flex h-14 w-56 shrink-0 items-center px-4 md:w-64"
           style={{
-            borderColor: "var(--dashboard-border)",
-            backgroundColor: "var(--dashboard-sidebar)",
+            backgroundColor: "var(--dashboard-bg)",
           }}
         >
           <span className="font-heading-ja text-sm font-semibold" style={{ color: "var(--dashboard-text)" }}>
@@ -118,13 +102,15 @@ export function AccountShell({
           </span>
         </div>
         <header
-          className="flex h-14 min-w-0 flex-1 items-center justify-end border-b px-4 md:px-6"
+          className="flex h-14 min-w-0 flex-1 items-center justify-end px-4 sm:gap-3 md:px-6"
           style={{
-            borderColor: "var(--dashboard-border)",
             backgroundColor: "var(--dashboard-bg)",
           }}
         >
-          <ThemeToggleSlot />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <AppLauncher />
+            <HeaderAccountAvatar avatarUrl={avatarUrl} />
+          </div>
         </header>
         <div
           className={`dashboard-nav-progress-track pointer-events-none ${pending ? "dashboard-nav-progress-track--active" : "dashboard-nav-progress-track--idle"}`}
@@ -139,10 +125,9 @@ export function AccountShell({
 
       <div className="flex min-h-0 flex-1">
         <aside
-          className="flex w-56 shrink-0 flex-col border-r md:w-64"
+          className="flex w-56 shrink-0 flex-col md:w-64"
           style={{
-            backgroundColor: "var(--dashboard-sidebar)",
-            borderColor: "var(--dashboard-border)",
+            backgroundColor: "var(--dashboard-bg)",
           }}
         >
           <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-2">
@@ -152,26 +137,9 @@ export function AccountShell({
                 <Link
                   key={href}
                   href={href}
-              onClick={() => {
-                if (!isActive) {
-                  // #region agent log
-                  fetch("http://127.0.0.1:7891/ingest/c7be69ac-68de-41af-8832-64fc1180a20c", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "a06a3d" },
-                    body: JSON.stringify({
-                      sessionId: "a06a3d",
-                      location: "AccountShell.tsx:Link.onClick",
-                      message: "nav click setPending true",
-                      data: { href, pathname, isActive },
-                      timestamp: Date.now(),
-                      hypothesisId: "I2",
-                      runId: "post-fix",
-                    }),
-                  }).catch(() => {});
-                  // #endregion
-                  setPending(true);
-                }
-              }}
+                  onClick={() => {
+                    if (!isActive) setPending(true);
+                  }}
                   className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors hover:opacity-90"
                   style={{
                     backgroundColor: isActive ? "var(--dashboard-nav-active-bg)" : "transparent",

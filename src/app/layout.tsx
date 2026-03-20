@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   description: "ログイン情報とプロフィールの編集",
 };
 
+/** OS のライト/ダークのみ（localStorage の dashboard-theme は参照しない） */
 const themeInitScript = `
 (function(){
   function systemTheme() {
@@ -26,14 +27,17 @@ const themeInitScript = `
       return 'light';
     }
   }
-  try {
-    var t = localStorage.getItem('dashboard-theme');
-    document.documentElement.classList.add('dashboard-theme-root');
-    var resolved = (t === 'dark' || t === 'light') ? t : systemTheme();
-    document.documentElement.setAttribute('data-theme', resolved);
-  } catch (e) {
+  function apply() {
     document.documentElement.classList.add('dashboard-theme-root');
     document.documentElement.setAttribute('data-theme', systemTheme());
+  }
+  try {
+    apply();
+    var m = window.matchMedia('(prefers-color-scheme: dark)');
+    m.addEventListener('change', function(){ apply(); });
+  } catch (e) {
+    document.documentElement.classList.add('dashboard-theme-root');
+    document.documentElement.setAttribute('data-theme', 'light');
   }
 })();`;
 

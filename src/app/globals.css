@@ -129,3 +129,48 @@ html.dashboard-theme-root body {
     transform: none !important;
   }
 }
+
+/* Account AI: 応答待ちの三点アニメーション */
+@keyframes account-ai-typing-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+.account-ai-typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0;
+}
+
+.account-ai-typing-dots span {
+  display: block;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 9999px;
+  background-color: var(--dashboard-text-muted);
+  animation: account-ai-typing-dot 1.2s ease-in-out infinite;
+}
+
+.account-ai-typing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.account-ai-typing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-ai-typing-dots span {
+    animation: none;
+    opacity: 0.65;
+  }
+}

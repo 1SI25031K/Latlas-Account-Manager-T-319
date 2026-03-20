@@ -112,7 +112,7 @@ export async function POST(req: Request) {
   const model = genAI.getGenerativeModel({
     model: modelName,
     systemInstruction:
-      "You are Latlas AI for Account Management. Help users with Latlas Account: profile, security, password, data privacy, sharing, storage, and navigation in this app. Be concise and accurate. If unsure, say you are not sure. Respond in Japanese when the user writes in Japanese.",
+      "You are Latlas AI for Account Center (beta). Help users with Latlas Account: profile, security, password, data privacy, sharing, storage, and navigation in this app. Be concise and accurate. If unsure, say you are not sure. Respond in Japanese when the user writes in Japanese.",
   });
 
   const history = messages.slice(0, -1).map((m) => ({

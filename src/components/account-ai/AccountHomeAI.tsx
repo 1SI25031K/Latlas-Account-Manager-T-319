@@ -467,20 +467,29 @@ export function AccountHomeAI({
           aria-hidden={hasConversation}
         >
           <div
-            className={`flex min-h-0 w-full max-w-3xl flex-col items-center justify-start gap-4 overflow-y-auto pt-5 sm:gap-5 sm:pt-6 ${hasConversation ? "pointer-events-none" : "pointer-events-auto"}`}
+            className={`flex min-h-0 w-full max-w-3xl flex-col items-center justify-start gap-4 overflow-y-auto pt-10 sm:gap-5 sm:pt-14 ${hasConversation ? "pointer-events-none" : "pointer-events-auto"}`}
           >
             <div
-              className="account-ai-empty-title flex max-w-full shrink-0 items-center justify-center gap-2 text-lg font-semibold sm:text-xl"
+              className="account-ai-empty-title flex max-w-full shrink-0 flex-wrap items-center justify-center gap-x-2 gap-y-2 text-lg font-semibold sm:text-xl"
               style={{ color: "var(--dashboard-text)" }}
             >
-              <span className="min-w-0">Latlas AI for Account Management</span>
               <CircleSpark
                 width={28}
                 height={28}
                 strokeWidth={1.5}
                 className="shrink-0"
                 style={{ color: "var(--dashboard-text)" }}
+                aria-hidden
               />
+              <span className="min-w-0 text-center">Latlas AI for Account Center</span>
+              <span
+                className="shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider text-white sm:text-[11px]"
+                style={{ backgroundColor: "#16a34a", boxShadow: "0 1px 2px rgba(22, 163, 74, 0.35)" }}
+                aria-label="ベータ版"
+                title="ベータ版"
+              >
+                BETA
+              </span>
             </div>
             {ACCOUNT_AI_SUGGESTION_ITEMS.length > 0 ? (
               <div

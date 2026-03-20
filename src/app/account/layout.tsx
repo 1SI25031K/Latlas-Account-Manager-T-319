@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { AccountChatProvider } from "@/components/account-ai/AccountChatContext";
 import { DashboardShell } from "@/components/DashboardShell";
 
 export default async function AccountLayout({
@@ -23,7 +24,7 @@ export default async function AccountLayout({
 
   return (
     <DashboardShell user={user} avatarUrl={avatarUrl}>
-      {children}
+      <AccountChatProvider userId={user.id}>{children}</AccountChatProvider>
     </DashboardShell>
   );
 }

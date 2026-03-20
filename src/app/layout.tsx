@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { AccountThemeRoot } from "@/components/AccountThemeRoot";
 import "./globals.css";
 
@@ -41,10 +42,16 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full dashboard-theme-root`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
       <body className="min-h-full antialiased">
+        {/*
+          生の <script> は React 19 がクライアントで警告するため、next/script の beforeInteractive を使用。
+          初回ペイント前に data-theme を付与する。
+        */}
+        <Script
+          id="dashboard-theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
         <AccountThemeRoot />
         {children}
       </body>

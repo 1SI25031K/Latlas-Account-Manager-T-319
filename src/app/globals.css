@@ -12,6 +12,11 @@ html.dashboard-theme-root[data-theme="light"] {
   /* AI チャット: 自分の投稿（薄青背景・白文字、コントラスト確保済み） */
   --account-chat-user-bg: #5b9ce6;
   --account-chat-user-text: #ffffff;
+  /* アカウント AI 枠・送信（投稿バブルより少し鮮やかな青＋白矢印） */
+  --account-ui-border: var(--dashboard-border);
+  --account-send-bg: #3b82f6;
+  --account-send-fg: #ffffff;
+  --account-send-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
 }
 
 html.dashboard-theme-root[data-theme="dark"] {
@@ -24,6 +29,16 @@ html.dashboard-theme-root[data-theme="dark"] {
   --dashboard-nav-active-bg: rgba(255, 255, 255, 0.05);
   --account-chat-user-bg: #4a7eb5;
   --account-chat-user-text: #ffffff;
+  /*
+   * チャット枠・入力ピル: 背景 (#0a0a0a / #000) と近いため枠を一段明るく
+   * 送信: 投稿バブル (#4a7eb5) よりはっきりした青、矢印は白
+   */
+  --account-ui-border: #3d444d;
+  --account-send-bg: #5b9ce6;
+  --account-send-fg: #ffffff;
+  --account-send-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
@@ -34,6 +49,28 @@ html.dashboard-theme-root[data-theme="dark"] {
 html.dashboard-theme-root {
   background-color: var(--dashboard-bg);
   color: var(--dashboard-text);
+  /* data-theme 適用前の一瞬でも未定義にならないようフォールバック */
+  --account-send-bg: #3b82f6;
+  --account-send-fg: #ffffff;
+  --account-send-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+  --account-ui-border: #e5e7eb;
+}
+
+/*
+ * 送信ボタン: Tailwind preflight の button { background: transparent } や
+ * 生成ユーティリティより後に勝つよう、テーマ付き html で詳細度を上げる。
+ */
+html.dashboard-theme-root[data-theme="light"] button.account-ai-send-btn,
+html.dashboard-theme-root[data-theme="dark"] button.account-ai-send-btn {
+  background-color: var(--account-send-bg, #3b82f6) !important;
+  color: var(--account-send-fg, #ffffff) !important;
+  box-shadow: var(--account-send-shadow) !important;
+}
+
+html.dashboard-theme-root[data-theme="light"] button.account-ai-send-btn svg,
+html.dashboard-theme-root[data-theme="dark"] button.account-ai-send-btn svg {
+  color: var(--account-send-fg, #ffffff) !important;
+  stroke: currentColor !important;
 }
 
 html.dashboard-theme-root body {
@@ -107,32 +144,77 @@ html.dashboard-theme-root body {
 }
 
 /* マウント後に data-animated=true で付与（SSR 直後はアニメ未適用のため再生されない問題を回避） */
-.account-home-hero:not([data-animated="true"]) .account-home-item-1,
-.account-home-hero:not([data-animated="true"]) .account-home-item-2,
-.account-home-hero:not([data-animated="true"]) .account-home-item-3 {
+.account-ai-home:not([data-animated="true"]) .account-home-item-1,
+.account-ai-home:not([data-animated="true"]) .account-home-item-2,
+.account-ai-home:not([data-animated="true"]) .account-home-item-3 {
   opacity: 0;
   transform: translateY(14px);
 }
 
-.account-home-hero[data-animated="true"] .account-home-item-1 {
+.account-ai-home[data-animated="true"] .account-home-item-1 {
   animation: account-home-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.account-home-hero[data-animated="true"] .account-home-item-2 {
+.account-ai-home[data-animated="true"] .account-home-item-2 {
   animation: account-home-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
 }
 
-.account-home-hero[data-animated="true"] .account-home-item-3 {
+.account-ai-home[data-animated="true"] .account-home-item-3 {
   animation: account-home-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
 }
 
+/* AI チャット枠: 名前・メールと同じ下からの出現 */
+.account-ai-home:not([data-animated="true"]) .account-ai-chat-card {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.account-ai-home[data-animated="true"] .account-ai-chat-card {
+  animation: account-home-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
+}
+
+/*
+ * 空チャット時タイトル「Latlas AI for…」: 位置は動かさず、左から露出＋フェード（clip-path）
+ */
+@keyframes account-ai-title-reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.account-ai-home:not([data-animated="true"]) .account-ai-empty-title {
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+}
+
+.account-ai-home[data-animated="true"] .account-ai-empty-title {
+  animation: account-ai-title-reveal 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.52s both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .account-home-hero .account-home-item-1,
-  .account-home-hero .account-home-item-2,
-  .account-home-hero .account-home-item-3 {
+  .account-ai-home .account-home-item-1,
+  .account-ai-home .account-home-item-2,
+  .account-ai-home .account-home-item-3 {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .account-ai-home .account-ai-chat-card {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .account-ai-home .account-ai-empty-title {
+    animation: none !important;
+    opacity: 1 !important;
+    clip-path: none !important;
   }
 }
 

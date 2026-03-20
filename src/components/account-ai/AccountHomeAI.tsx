@@ -1,12 +1,13 @@
 "use client";
 
-import { CircleSpark, Send, UserCircle } from "iconoir-react";
+import { ArrowRight, CircleSpark, UserCircle } from "iconoir-react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import type { ChatMessagePayload } from "@/lib/account-ai-types";
 import {
   ACCOUNT_FAQ_DISPLAY_MAX,
   ACCOUNT_FAQ_ITEMS,
 } from "@/lib/account-faq";
+import { useAccountChat } from "@/components/account-ai/AccountChatContext";
 
 function shuffleInPlace<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -36,12 +37,22 @@ export function AccountHomeAI({
   avatarUrl: string | null;
   email: string;
 }) {
+  const {
+    messages,
+    setMessages,
+    input,
+    setInput,
+    loading,
+    setLoading,
+    error,
+    setError,
+  } = useAccountChat();
   const [animated, setAnimated] = useState(false);
-  const [messages, setMessages] = useState<ChatMessagePayload[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const listEndRef = useRef<HTMLDivElement>(null);
+  /** Enter 1回目で true → 2回目で送信（1回目は変換確定などに使える） */
+  const enterArmedRef = useRef(false);
+  /** ブラウザの setTimeout は number、Node の型定義と食い違うため明示 */
+  const enterArmTimeoutRef = useRef<number | null>(null);
 
   const [faqChips] = useState(() =>
     ACCOUNT_FAQ_ITEMS.length
@@ -55,15 +66,8 @@ export function AccountHomeAI({
       queueMicrotask(() => setAnimated(true));
       return;
     }
-    let raf1 = 0;
-    let raf2 = 0;
-    raf1 = window.requestAnimationFrame(() => {
-      raf2 = window.requestAnimationFrame(() => setAnimated(true));
-    });
-    return () => {
-      window.cancelAnimationFrame(raf1);
-      window.cancelAnimationFrame(raf2);
-    };
+    /* 二重 rAF だと遅延やキャンセルで data-animated が true にならず、ヒーローが常時 opacity:0 のままになることがある */
+    setAnimated(true);
   }, []);
 
   const scrollToBottom = useCallback(() => {
@@ -113,21 +117,62 @@ export function AccountHomeAI({
     [loading, messages, sendMessages],
   );
 
+  const clearEnterArmTimer = useCallback(() => {
+    if (enterArmTimeoutRef.current) {
+      clearTimeout(enterArmTimeoutRef.current);
+      enterArmTimeoutRef.current = null;
+    }
+  }, []);
+
+  const resetEnterArm = useCallback(() => {
+    enterArmedRef.current = false;
+    clearEnterArmTimer();
+  }, [clearEnterArmTimer]);
+
+  useLayoutEffect(() => {
+    return () => clearEnterArmTimer();
+  }, [clearEnterArmTimer]);
+
   const onSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
+      resetEnterArm();
       void submitUserText(input);
     },
-    [input, submitUserText],
+    [input, resetEnterArm, submitUserText],
   );
 
   const onComposerKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key !== "Enter") return;
+
+      // IME 変換中は何もしない（1回目の Enter で変換確定に使える）
+      if (e.nativeEvent.isComposing || e.keyCode === 229) {
+        return;
+      }
+
       e.preventDefault();
+
+      if (!input.trim() || loading) {
+        resetEnterArm();
+        return;
+      }
+
+      if (!enterArmedRef.current) {
+        enterArmedRef.current = true;
+        clearEnterArmTimer();
+        enterArmTimeoutRef.current = window.setTimeout(() => {
+          enterArmedRef.current = false;
+          enterArmTimeoutRef.current = null;
+        }, 4000);
+        return;
+      }
+
+      enterArmedRef.current = false;
+      clearEnterArmTimer();
       void submitUserText(input);
     },
-    [input, submitUserText],
+    [input, loading, submitUserText, clearEnterArmTimer, resetEnterArm],
   );
 
   const hasConversation = messages.length > 0;
@@ -137,12 +182,12 @@ export function AccountHomeAI({
   }, [hasConversation, messages, loading, scrollToBottom]);
 
   return (
-    <div className="flex flex-col items-center">
-      <div
-        className="account-home-hero flex w-full flex-col items-center text-center"
-        data-animated={animated ? "true" : "false"}
-        suppressHydrationWarning
-      >
+    <div
+      className="account-ai-home flex w-full flex-col items-center"
+      data-animated={animated ? "true" : "false"}
+      suppressHydrationWarning
+    >
+      <div className="account-home-hero relative z-10 flex w-full shrink-0 flex-col items-center text-center">
         <div
           className="account-home-item-1 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2"
           style={{
@@ -193,9 +238,9 @@ export function AccountHomeAI({
       ) : null}
 
       <div
-        className="mt-8 flex min-h-[min(70vh,520px)] max-h-[min(72vh,560px)] w-full max-w-3xl flex-col rounded-3xl border p-5 shadow-sm sm:p-8 md:rounded-[2.25rem]"
+        className="account-ai-chat-card mt-8 flex min-h-[min(70vh,520px)] max-h-[min(72vh,560px)] w-full max-w-3xl flex-col rounded-3xl border p-5 pb-2 shadow-sm sm:p-8 sm:pb-3 md:rounded-[2.25rem]"
         style={{
-          borderColor: "var(--dashboard-border)",
+          borderColor: "var(--account-ui-border)",
           backgroundColor: "var(--dashboard-card)",
         }}
       >
@@ -235,10 +280,10 @@ export function AccountHomeAI({
             aria-hidden={hasConversation}
           >
             <div
-              className="flex items-center gap-2 text-lg font-semibold sm:text-xl"
+              className="account-ai-empty-title flex max-w-full items-center gap-2 text-lg font-semibold sm:text-xl"
               style={{ color: "var(--dashboard-text)" }}
             >
-              <span>Latlas AI for Account Management</span>
+              <span className="min-w-0">Latlas AI for Account Management</span>
               <CircleSpark
                 width={28}
                 height={28}
@@ -259,11 +304,11 @@ export function AccountHomeAI({
           </p>
         ) : null}
 
-        <form onSubmit={onSubmit} className="w-full shrink-0 py-6 pt-8">
+        <form onSubmit={onSubmit} className="w-full shrink-0 pt-6 pb-0">
           <div
-            className="flex w-full items-center gap-3 rounded-[9999px] border px-2 py-4 pl-5 sm:pl-6"
+            className="flex w-full items-center gap-2.5 rounded-[9999px] border px-2 py-2.5 pl-4 sm:pl-5"
             style={{
-              borderColor: "var(--dashboard-border)",
+              borderColor: "var(--account-ui-border)",
               backgroundColor: "var(--dashboard-bg)",
             }}
           >
@@ -273,34 +318,46 @@ export function AccountHomeAI({
               autoComplete="off"
               disabled={loading}
               placeholder="Latlas Account について質問できます。"
-              title="Enter で送信"
-              aria-label="質問を入力"
-              className="min-h-10 min-w-0 flex-1 border-0 bg-transparent py-2 text-sm leading-normal outline-none"
+              title="Enter を2回で送信（変換中は変換の確定に使えます）"
+              aria-label="質問を入力。Enter を2回で送信"
+              className="min-h-8 min-w-0 flex-1 border-0 bg-transparent py-1 text-sm leading-snug outline-none"
               style={{ color: "var(--dashboard-text)" }}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                enterArmedRef.current = false;
+                clearEnterArmTimer();
+              }}
+              onBlur={resetEnterArm}
               onKeyDown={onComposerKeyDown}
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-[opacity,transform] duration-150 hover:opacity-90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45"
+              className="account-ai-send-btn flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-[opacity,transform] duration-150 hover:opacity-90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45"
               style={{
-                backgroundColor: "#0a0a0a",
-                color: "#fafafa",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.12)",
+                backgroundColor: "var(--account-send-bg, #3b82f6)",
+                color: "var(--account-send-fg, #ffffff)",
+                boxShadow: "var(--account-send-shadow)",
               }}
               aria-label="送信"
             >
-              <Send
-                width={22}
-                height={22}
-                strokeWidth={1.85}
-                className="-translate-x-px translate-y-px"
+              <ArrowRight
+                width={20}
+                height={20}
+                strokeWidth={2}
+                className="-translate-x-px"
+                style={{ color: "var(--account-send-fg, #ffffff)" }}
                 aria-hidden
               />
             </button>
           </div>
+          <p
+            className="mt-5 px-1 text-center text-[9px] leading-tight sm:text-[10px]"
+            style={{ color: "var(--dashboard-text-muted)" }}
+          >
+            機密情報や個人情報は入力せず、回答の正確性を必ず自身で確認してください。
+          </p>
         </form>
       </div>
     </div>
